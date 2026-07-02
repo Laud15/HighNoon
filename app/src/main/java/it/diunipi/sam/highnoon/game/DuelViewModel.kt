@@ -16,8 +16,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import it.diunipi.sam.highnoon.audio.SoundEffects
 import it.diunipi.sam.highnoon.audio.WesternMusic
-import it.diunipi.sam.highnoon.audio.playCheater
-import it.diunipi.sam.highnoon.audio.playGunshot
 import it.diunipi.sam.highnoon.notification.fireSignal
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

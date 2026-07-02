@@ -4,21 +4,6 @@ import android.content.Context
 import android.media.MediaPlayer
 import it.diunipi.sam.highnoon.R
 
-// --- Suoni "spara e dimentica" (per lo sparo): crea, suona, si auto-rilascia ---
-fun playSoundRes(context: Context, resId: Int) {
-    val mediaPlayer = MediaPlayer.create(context, resId)
-    mediaPlayer.setOnCompletionListener { mp -> mp.release() }
-    mediaPlayer.start()
-}
-
-fun playGunshot(context: Context) {
-    playSoundRes(context, R.raw.gunshot)
-}
-
-fun playCheater(context: Context) {
-    playSoundRes(context, R.raw.cheater)
-}
-
 // --- Gestione dedicata della musica western ---
 // Una classe che "possiede" il MediaPlayer della western e lo controlla.
 // Tutta la complessita' (creare, rilasciare, evitare player doppi) sta qui dentro.
