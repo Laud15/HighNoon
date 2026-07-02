@@ -1,7 +1,8 @@
-package it.diunipi.sam.highnoon
+package it.diunipi.sam.highnoon.audio
 
 import android.content.Context
 import android.media.MediaPlayer
+import it.diunipi.sam.highnoon.R
 
 // --- Suoni "spara e dimentica" (per lo sparo): crea, suona, si auto-rilascia ---
 fun playSoundRes(context: Context, resId: Int) {
@@ -12,6 +13,10 @@ fun playSoundRes(context: Context, resId: Int) {
 
 fun playGunshot(context: Context) {
     playSoundRes(context, R.raw.gunshot)
+}
+
+fun playCheater(context: Context) {
+    playSoundRes(context, R.raw.cheater)
 }
 
 // --- Gestione dedicata della musica western ---
