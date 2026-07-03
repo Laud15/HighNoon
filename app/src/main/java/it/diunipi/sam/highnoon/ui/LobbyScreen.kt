@@ -20,10 +20,10 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun LobbyScreen(modifier: Modifier = Modifier.Companion) {
-    // STATO: la frase di stato corrente del duello.
-    // 'remember' + 'mutableStateOf' = il pattern della Lez. 09.
-    // 'by' è la proprieta' delegata (Lez. 09): leggiamo/scriviamo 'statusText'
-    // come una normale variabile, ma dietro c'e' il getter/setter di mutableStateOf.
+    //STATUS: The current status phrase of the duel.
+    // 'remember' + 'mutableStateOf' = the pattern of Lez. 09.
+    // 'by' is the delegated property (Lesson 09): we read/write 'statusText' as a normal variable,
+    // but behind it there is the mutableStateOf getter/setter.
     var statusText by remember { mutableStateOf("waiting for the start") }
 
     Column(
@@ -31,7 +31,7 @@ fun LobbyScreen(modifier: Modifier = Modifier.Companion) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Titolo del gioco
+        // Game's title
         Text(
             text = "HIGH NOON",
             fontSize = 48.sp
@@ -39,7 +39,7 @@ fun LobbyScreen(modifier: Modifier = Modifier.Companion) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Sottotitolo
+        // subtitle
         Text(
             text = "Gunslinger duel",
             fontSize = 16.sp,
@@ -48,10 +48,9 @@ fun LobbyScreen(modifier: Modifier = Modifier.Companion) {
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // Stato corrente: questo Text LEGGE 'statusText'.
-        // Per la logica publish/subscribe della Lez. 09, questa lettura
-        // "abbona" il Text ai cambiamenti: se statusText cambia, SOLO
-        // questa parte viene ridisegnata (recomposing).
+        //Current Status: This Text READS 'statusText'. For the publish/subscribe logic of Lez. 09,
+        // this reading "subscribes" the Text to changes: if statusText changes,
+        // ONLY This part is recomposed.
         Text(
             text = statusText,
             fontSize = 20.sp
@@ -59,8 +58,8 @@ fun LobbyScreen(modifier: Modifier = Modifier.Companion) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // EVENTO: il bottone. onClick e' una lambda (Lez. 09).
-        // Premendolo MODIFICHIAMO lo stato -> scatta il recomposing.
+        //EVENT: the button. onClick is a lambda (Lez. 09).
+        // By pressing it we CHANGE the state -> the recomposing is triggered.
         Button(onClick = {
             statusText = "Looking for an opponent..."
         }) {

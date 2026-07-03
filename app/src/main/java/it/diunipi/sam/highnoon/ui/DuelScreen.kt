@@ -23,12 +23,11 @@ fun DuelScreen(
     modifier: Modifier = Modifier,
     viewModel: DuelViewModel = viewModel()
 ) {
-    // Il sensore ascolta solo mentre la schermata e' presente.
+    // The sensor listens only while the screen is present.
     DisposableEffect(Unit) {
         viewModel.startListening()
-        onDispose {
-            viewModel.stopListening()
-        }
+        onDispose { viewModel.stopListening() }
+
     }
 
     Column(
@@ -38,17 +37,17 @@ fun DuelScreen(
     ) {
         when (viewModel.phase) {
             DuelPhase.IDLE -> {
-                Text(text = "Pronto al duello?", fontSize = 24.sp)
+                Text(text = "Ready for the duel?", fontSize = 24.sp)
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(onClick = { viewModel.startDuel() }) {
                     Text(text = "Start")
                 }
             }
             DuelPhase.WAITING -> {
-                Text(text = "Tieni fermo...", fontSize = 24.sp)
+                Text(text = "Hold on...", fontSize = 24.sp)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Estrai SOLO al segnale!",
+                    text = "Extract ONLY at the signal!",
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -58,14 +57,14 @@ fun DuelScreen(
             }
             DuelPhase.RESULT -> {
                 if (viewModel.falseStart) {
-                    Text(text = "Falsa partenza!", fontSize = 32.sp, color = MaterialTheme.colorScheme.error)
+                    Text(text = "False start!", fontSize = 32.sp, color = MaterialTheme.colorScheme.error)
                 } else {
-                    Text(text = "Tempo di reazione", fontSize = 20.sp)
+                    Text(text = "Reaction time", fontSize = 20.sp)
                     Text(text = "${viewModel.reactionMs} ms", fontSize = 40.sp)
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(onClick = { viewModel.reset() }) {
-                    Text(text = "Rigioca")
+                    Text(text = "Play again")
                 }
             }
         }

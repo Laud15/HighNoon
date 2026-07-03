@@ -25,18 +25,18 @@ import kotlin.random.Random
 private const val DRAW_THRESHOLD = 12f
 class DuelViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Context applicativo, sicuro da tenere nel ViewModel (vive quanto l'app).
+    // Application context, safe to keep in the ViewModel (it lives as much as the app).
     private val appContext = application.applicationContext
 
-    // Il ViewModel possiede la musica western (prima stava nella UI).
+    // The ViewModel has western music.
     private val westernMusic = WesternMusic(appContext)
     private val soundEffects = SoundEffects(appContext)
 
-    // --- SENSORE ---
+    // --- SENSOR ---
     private val sensorManager = appContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val linearAccelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
 
-    // --- STATO ---
+    // --- STATE ---
     var phase by mutableStateOf(DuelPhase.IDLE)
         private set
 
@@ -47,20 +47,20 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         private set
 
     private var signalTime = 0L
-    private var musicFinished = false      // ora e' interno, non piu' letto dalla UI
+    private var musicFinished = false
     private var countdownJob: Job? = null
 
     init {
-        // Colleghiamo la callback di fine musica: la western avvisa il ViewModel.
+       // We connect the callback at the end of the music: the western notifies the ViewModel.
         westernMusic.onFinished = {
             musicFinished = true
         }
     }
 
-    // --- EVENTI / LOGICA ---
+    // --- EVENTS / LOGIC ---
 
-    // Il listener: interpreta le letture in base alla fase (la logica che
-    // prima stava in DuelScreen, ora e' qui dove appartiene).
+    // The listener: interprets readings based on the phase (the logic that before it was in DuelScreen,
+    // now it's here where it belongs).
     private val sensorListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
             val y = event.values[1]
@@ -81,7 +81,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
     }
 
-    // Chiamato dalla UI quando la schermata diventa visibile.
+    // Called by the UI when the screen becomes visible.
     fun startListening() {
         if (linearAccelSensor != null) {
             sensorManager.registerListener(
@@ -92,7 +92,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // Chiamato dalla UI quando la schermata non e' piu' visibile.
+    // Called by the UI when the screen is no longer visible.
     fun stopListening() {
         sensorManager.unregisterListener(sensorListener)
     }
@@ -101,7 +101,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     fun startDuel() {
         falseStart = false
         musicFinished = false
-        westernMusic.play()                // il ViewModel suona la western
+        westernMusic.play()
         phase = DuelPhase.WAITING
         startCountdown()
     }
@@ -126,7 +126,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     fun onEarlyMovement() {
         if (phase == DuelPhase.WAITING) {
             westernMusic.stop()
-            soundEffects.playCheater()      // era: playCheater(appContext)
+            soundEffects.playCheater()
             falseStart = true
             phase = DuelPhase.RESULT
         }
@@ -135,7 +135,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     fun onValidDraw() {
         if (phase == DuelPhase.DRAW) {
             reactionMs = SystemClock.elapsedRealtime() - signalTime
-            soundEffects.playGunshot()      // era: playGunshot(appContext)
+            soundEffects.playGunshot()
             phase = DuelPhase.RESULT
         }
     }
@@ -144,10 +144,10 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         phase = DuelPhase.IDLE
     }
 
-    // Pulizia: quando il ViewModel viene distrutto, rilascia la musica.
+    // Cleanup: When the ViewModel is destroyed, it releases the music.
     override fun onCleared() {
         super.onCleared()
-        stopListening()          // sicurezza: deregistra il sensore
+        stopListening()          // Security: Deregisters the sensor
         westernMusic.stop()
         soundEffects.release()
     }

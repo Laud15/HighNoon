@@ -5,13 +5,13 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
 
-// Possiede il SoundPool e gli effetti brevi (sparo, cheater).
-// Carica i suoni UNA volta e li riproduce senza creare nuovi oggetti.
+// Has SoundPool and short effects (shot, cheater).
+// It loads sounds ONCE and plays them without creating new objects.
 class SoundEffects(context: Context) {
 
-    // Configurazione del tipo di audio: sono suoni di gioco/UI.
+    // Audio Type Configuration: These are game/UI sounds.
     private val soundPool: SoundPool = SoundPool.Builder()
-        .setMaxStreams(4)   // quanti suoni possono sovrapporsi al massimo
+        .setMaxStreams(4)   // how many sounds can overlap at most
         .setAudioAttributes(
             AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_GAME)
@@ -20,21 +20,21 @@ class SoundEffects(context: Context) {
         )
         .build()
 
-    // Gli ID dei suoni caricati. -1 = non ancora caricato.
+    //The IDs of the uploaded sounds. -1 = not yet loaded.
     private var gunshotId: Int = -1
     private var cheaterId: Int = -1
 
-    // Teniamo traccia di quali suoni sono pronti (caricamento asincrono).
+    // We keep track of which sounds are ready (asynchronous loading).
     private val readySounds = mutableSetOf<Int>()
 
     init {
-        // Listener: chiamato quando un suono finisce di caricare.
+        // Listener: Called when a sound finishes loading.
         soundPool.setOnLoadCompleteListener { _, sampleId, status ->
-            if (status == 0) {          // 0 = caricamento riuscito
+            if (status == 0) {          // 0 = Successful upload
                 readySounds.add(sampleId)
             }
         }
-        // Avvia il caricamento (asincrono) dei due effetti.
+        // Starts loading (asynchronously) the two effects.
         gunshotId = soundPool.load(context, R.raw.gunshot, 1)
         cheaterId = soundPool.load(context, R.raw.cheater, 1)
     }
@@ -47,7 +47,7 @@ class SoundEffects(context: Context) {
         playIfReady(cheaterId)
     }
 
-    // Suona un suono solo se e' gia' stato caricato.
+    // Play a sound only if it has already been loaded.
     private fun playIfReady(soundId: Int) {
         if (soundId != -1 && readySounds.contains(soundId)) {
             // play(id, volSinistro, volDestro, priorita', loop, velocita')
@@ -55,7 +55,7 @@ class SoundEffects(context: Context) {
         }
     }
 
-    // Rilascia le risorse quando non servono piu'.
+    // Release resources when they are no longer needed.
     fun release() {
         soundPool.release()
     }

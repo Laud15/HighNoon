@@ -4,25 +4,25 @@ import android.content.Context
 import android.media.MediaPlayer
 import it.diunipi.sam.highnoon.R
 
-// --- Gestione dedicata della musica western ---
-// Una classe che "possiede" il MediaPlayer della western e lo controlla.
-// Tutta la complessita' (creare, rilasciare, evitare player doppi) sta qui dentro.
+//--- Dedicated management of western music ---
+// A class that "owns" the Western MediaPlayer and controls it.
+// All the complexity (creating, releasing, avoiding duplicate players) is in here.
 class WesternMusic(private val context: Context) {
     private var player: MediaPlayer? = null
 
-    // Callback opzionale: viene chiamata quando la musica finisce.
+    // Optional callback: Called when the music ends.
     var onFinished: (() -> Unit)? = null
 
     fun play() {
-        // Se c'era un player precedente, lo fermiamo e rilasciamo:
-        // garantisce UN SOLO player alla volta -> niente race condition.
+       // If there was a previous player,
+        // we stop it and release: guarantees ONLY ONE player at a time -> no race conditions.
         stop()
 
         val mp = MediaPlayer.create(context, R.raw.western_start)
         mp.setOnCompletionListener {
             it.release()
             player = null
-            onFinished?.invoke()    // avvisa, se qualcuno e' interessato
+            onFinished?.invoke()   // notifies, if anyone is interested
         }
         player = mp
         mp.start()

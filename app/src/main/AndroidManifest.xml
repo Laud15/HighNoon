@@ -5,6 +5,22 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Wi-Fi Direct: read Wi-Fi state and start/manage P2P connections. Normal permissions. -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
+    <!-- TCP sockets over the Wi-Fi Direct group. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Peer discovery. minSdk 33, so no ACCESS_FINE_LOCATION fallback.
+         neverForLocation: we don't derive location from Wi-Fi. -->
+    <uses-permission
+        android:name="android.permission.NEARBY_WIFI_DEVICES"
+        android:usesPermissionFlags="neverForLocation" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
