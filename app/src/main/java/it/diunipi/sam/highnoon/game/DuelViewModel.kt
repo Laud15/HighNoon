@@ -16,11 +16,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+
 import it.diunipi.sam.highnoon.audio.SoundEffects
-import it.diunipi.sam.highnoon.audio.WesternMusic
+import it.diunipi.sam.highnoon.audio.MusicPlayer
 import it.diunipi.sam.highnoon.network.SocketConnection
 import it.diunipi.sam.highnoon.network.WifiDirectConnection
 import it.diunipi.sam.highnoon.notification.fireSignal
+import it.diunipi.sam.highnoon.R
+
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -32,7 +35,10 @@ private const val DRAW_THRESHOLD = 12f
 class DuelViewModel(application: Application) : AndroidViewModel(application) {
 
     private val appContext = application.applicationContext
-    private val westernMusic = WesternMusic(appContext)
+
+    private val westernMusic = MusicPlayer(appContext, R.raw.western_start)
+    private val victoryMusic = MusicPlayer(appContext, R.raw.victory)
+    private val defeatMusic = MusicPlayer(appContext, R.raw.defeat)
     private val soundEffects = SoundEffects(appContext)
 
     // The VM owns every resource and bridges every callback to state:
@@ -246,6 +252,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun leaveGame() {
+        stopResultMusic()
         pendingLobbyMessage = null
         pendingResumeSearch = false
         startTeardown()
@@ -254,6 +261,8 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     @SuppressLint("MissingPermission")
     private fun onSocketClosed() {
         connectTimeoutJob?.cancel()
+        westernMusic.stop()
+        stopResultMusic()
         socketConnected = false
         socketStarted = false
         searching = false
@@ -303,6 +312,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     fun startDuel() {
         if (!isGroupOwner) return          // only the host (Group Owner) runs the round
         resetRoundState()
+        stopResultMusic()            // NEW: silence any victory/defeat before a new round
         phase = DuelPhase.WAITING
         socket.send(DuelProtocol.WAIT)
         westernMusic.play()
@@ -326,6 +336,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun beginWaiting() {   // client side, on WAIT
         resetRoundState()
+        stopResultMusic()            // NEW: silence any victory/defeat before a new round
         phase = DuelPhase.WAITING
         westernMusic.play()
     }
@@ -399,13 +410,24 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun showOutcome(o: Outcome) {
+        westernMusic.stop()          // FIX: kill any lingering intro music (e.g. after a false start)
         outcome = o
         phase = DuelPhase.RESULT
+        when (o) {
+            Outcome.WIN -> victoryMusic.play()
+            Outcome.LOSE -> defeatMusic.play()
+            Outcome.DRAW -> {}       // a draw has no result music
+        }
     }
 
     private fun resetRoundState() {
         falseStart = false; reactionMs = 0L; outcome = null; musicFinished = false
         resolved = false; goDrewMs = null; goFalse = false; clientDrewMs = null; clientFalse = false
+    }
+
+    private fun stopResultMusic() {
+        victoryMusic.stop()
+        defeatMusic.stop()
     }
 
     fun playAgain() { if (isGroupOwner) startDuel() else phase = DuelPhase.IDLE }
@@ -417,6 +439,8 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         sensorManager.unregisterListener(sensorListener)
         if (wifiRegistered) { wifi.unregister(); wifiRegistered = false }
         westernMusic.stop()
+        victoryMusic.stop()
+        defeatMusic.stop()
         soundEffects.release()
         socket.release()
     }

@@ -40,8 +40,7 @@ import it.diunipi.sam.highnoon.game.DuelViewModel
 import it.diunipi.sam.highnoon.game.Outcome
 
 private fun requiredRuntimePermissions() = arrayOf(Manifest.permission.NEARBY_WIFI_DEVICES) // minSdk 33
-private fun hasAllPermissions(context: Context, perms: Array<String>) =
-    perms.all { context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }
+private fun hasAllPermissions(context: Context, perms: Array<String>) = perms.all { context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }
 
 @Composable
 fun GameScreen(
