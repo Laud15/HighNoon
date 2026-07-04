@@ -34,6 +34,10 @@ class WifiDirectConnection(private val context: Context) {
     var onThisDeviceChanged: ((WifiP2pDevice) -> Unit)? = null
     var onConnectionInfo: ((WifiP2pInfo) -> Unit)? = null
 
+    var onDiscoveryChanged: ((Boolean) -> Unit)? = null   // true = discovery active
+
+    var onConnectRequestFailed: (() -> Unit)? = null   // the framework rejected the connect() request
+
     // These two listeners fire REPEATEDLY (on every peer/connection change), so we
     // create them ONCE as fields and reuse them (criterio prof n.3, fewer objects).
     private val peerListListener = WifiP2pManager.PeerListListener { peers ->
@@ -70,6 +74,10 @@ class WifiDirectConnection(private val context: Context) {
                     )
                     if (me != null) onThisDeviceChanged?.invoke(me)
                 }
+                WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION -> {
+                    val state = intent.getIntExtra(WifiP2pManager.EXTRA_DISCOVERY_STATE, -1)
+                    onDiscoveryChanged?.invoke(state == WifiP2pManager.WIFI_P2P_DISCOVERY_STARTED)
+                }
             }
         }
     }
@@ -80,6 +88,7 @@ class WifiDirectConnection(private val context: Context) {
         addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION)
         addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION)
         addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
+        addAction(WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION)
     }
 
     fun register() {
@@ -116,6 +125,7 @@ class WifiDirectConnection(private val context: Context) {
             }
             override fun onFailure(reason: Int) {
                 Log.d(TAG, "connect: request failed, reason=$reason")
+                onConnectRequestFailed?.invoke()
             }
         })
     }
@@ -129,6 +139,14 @@ class WifiDirectConnection(private val context: Context) {
             override fun onFailure(reason: Int) {
                 Log.d(TAG, "removeGroup: failed, reason=$reason")
             }
+        })
+    }
+
+
+    fun stopDiscovery() {
+        manager.stopPeerDiscovery(channel, object : WifiP2pManager.ActionListener {
+            override fun onSuccess() { Log.d(TAG, "stopPeerDiscovery: ok") }
+            override fun onFailure(reason: Int) { Log.d(TAG, "stopPeerDiscovery: failed, reason=$reason") }
         })
     }
 }

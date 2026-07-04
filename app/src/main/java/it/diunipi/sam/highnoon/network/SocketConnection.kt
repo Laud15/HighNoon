@@ -85,6 +85,8 @@ class SocketConnection {
     // Same code once the socket exists, for both server and client side.
     private suspend fun handleSocket(s: Socket) {
         socket = s
+        s.tcpNoDelay = true  // real-time channel: disable Nagle so the tiny GO/result messages aren't buffered by TCP before going out
+
         writer = BufferedWriter(OutputStreamWriter(s.getOutputStream()))
         val reader = BufferedReader(InputStreamReader(s.getInputStream()))
 
