@@ -3,12 +3,14 @@ package it.diunipi.sam.highnoon.game
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pInfo
+import android.os.Environment
 import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -16,21 +18,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-
-import it.diunipi.sam.highnoon.audio.SoundEffects
+import it.diunipi.sam.highnoon.R
 import it.diunipi.sam.highnoon.audio.MusicPlayer
+import it.diunipi.sam.highnoon.audio.SoundEffects
 import it.diunipi.sam.highnoon.network.SocketConnection
 import it.diunipi.sam.highnoon.network.WifiDirectConnection
 import it.diunipi.sam.highnoon.notification.fireSignal
-import it.diunipi.sam.highnoon.R
-
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import kotlin.math.abs
 import kotlin.random.Random
 
 private const val DRAW_THRESHOLD = 12f
+private const val SELFIE_FILE = "winner_selfie.jpg"
+private const val PHOTO_FILE = "winner_photo.jpg"
 
 class DuelViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -66,6 +71,9 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     var connectionError by mutableStateOf<String?>(null); private set
     var challengeState by mutableStateOf(ChallengeState.NONE); private set
 
+    var receivedSelfie by mutableStateOf<Bitmap?>(null); private set
+    var receivedPhoto by mutableStateOf<Bitmap?>(null); private set
+
     // --- internals ---
     private var signalTime = 0L
     private var musicFinished = false
@@ -84,6 +92,10 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     private var goFalse = false
     private var clientDrewMs: Long? = null
     private var clientFalse = false
+
+    var iAmReady by mutableStateOf(true); private set
+    var opponentReady by mutableStateOf(true); private set
+
 
     init {
         westernMusic.onFinished = { musicFinished = true }
@@ -202,6 +214,22 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     // --- Incoming messages ---------------------------------------------------
 
     private fun handleMessage(line: String) {
+        // Incoming winner photos (base64). Decode off the UI thread, then publish to state.
+        DuelProtocol.parseSelfie(line)?.let { b64 ->
+            viewModelScope.launch {
+                val bmp = withContext(Dispatchers.Default) { PhotoCodec.decodeBase64(b64) }
+                receivedSelfie = bmp
+            }
+            return
+        }
+        DuelProtocol.parsePhoto(line)?.let { b64 ->
+            viewModelScope.launch {
+                val bmp = withContext(Dispatchers.Default) { PhotoCodec.decodeBase64(b64) }
+                receivedPhoto = bmp
+            }
+            return
+        }
+        if (line == DuelProtocol.READY) { opponentReady = true; return }
         // Pre-duel challenge handshake.
         DuelProtocol.parseChallenge(line)?.let { challengerNick ->
             opponentName = challengerNick
@@ -410,19 +438,33 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun showOutcome(o: Outcome) {
-        westernMusic.stop()          // FIX: kill any lingering intro music (e.g. after a false start)
+        westernMusic.stop()
         outcome = o
         phase = DuelPhase.RESULT
         when (o) {
-            Outcome.WIN -> victoryMusic.play()
-            Outcome.LOSE -> defeatMusic.play()
-            Outcome.DRAW -> {}       // a draw has no result music
+            Outcome.WIN -> {
+                victoryMusic.play()
+                iAmReady = false          // winner becomes ready only AFTER sending the photos
+            }
+            Outcome.LOSE -> {
+                defeatMusic.play()
+                iAmReady = true           // loser doesn't gate the next round
+                socket.send(DuelProtocol.READY)
+            }
+            Outcome.DRAW -> {
+                iAmReady = true
+                socket.send(DuelProtocol.READY)
+            }
         }
+        // The other side is not ready until it tells us so.
+        opponentReady = false
     }
 
     private fun resetRoundState() {
         falseStart = false; reactionMs = 0L; outcome = null; musicFinished = false
         resolved = false; goDrewMs = null; goFalse = false; clientDrewMs = null; clientFalse = false
+        receivedSelfie = null; receivedPhoto = null
+        iAmReady = true; opponentReady = true
     }
 
     private fun stopResultMusic() {
@@ -430,7 +472,10 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         defeatMusic.stop()
     }
 
-    fun playAgain() { if (isGroupOwner) startDuel() else phase = DuelPhase.IDLE }
+    fun playAgain() {
+        if (!isGroupOwner) { phase = DuelPhase.IDLE; return }
+        if (iAmReady && opponentReady) startDuel()
+    }
 
     override fun onCleared() {
         super.onCleared()
@@ -444,4 +489,31 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         soundEffects.release()
         socket.release()
     }
+
+
+    fun sendVictoryPhotos() {
+        viewModelScope.launch {
+            val dir = appContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+            val selfiePath = File(dir, SELFIE_FILE).absolutePath
+            val photoPath = File(dir, PHOTO_FILE).absolutePath
+
+            val selfieB64 = withContext(Dispatchers.Default) { PhotoCodec.encodeFileToBase64(selfiePath) }
+            val photoB64 = withContext(Dispatchers.Default) { PhotoCodec.encodeFileToBase64(photoPath) }
+
+            selfieB64?.let { socket.send(DuelProtocol.selfie(it)) }
+            photoB64?.let { socket.send(DuelProtocol.photo(it)) }
+
+            socket.send(DuelProtocol.READY)  // winner is done -> ok to start next round
+            iAmReady = true
+        }
+    }
+
+    // Winner chooses not to take photos: just declare readiness.
+    fun skipVictoryPhotos() {
+        socket.send(DuelProtocol.READY)
+        iAmReady = true
+    }
+
+    fun selfieFileName() = SELFIE_FILE
+    fun photoFileName() = PHOTO_FILE
 }

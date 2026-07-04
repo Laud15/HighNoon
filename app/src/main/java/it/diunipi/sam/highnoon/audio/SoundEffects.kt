@@ -1,9 +1,9 @@
 package it.diunipi.sam.highnoon.audio
 
-import it.diunipi.sam.highnoon.R
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
+import it.diunipi.sam.highnoon.R
 
 // Has SoundPool and short effects (shot, cheater).
 // It loads sounds ONCE and plays them without creating new objects.
