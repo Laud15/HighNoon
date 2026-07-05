@@ -1,3 +1,55 @@
 <resources>
     <string name="app_name">High Noon</string>
+
+    <!-- Lobby -->
+    <string name="app_title">HIGH NOON</string>
+    <string name="grant_permissions">Grant permissions</string>
+    <string name="nickname_label">Your nickname</string>
+    <string name="find_opponent">Find an opponent</string>
+    <string name="searching">Searching for opponents…</string>
+    <string name="cancel">Cancel</string>
+    <string name="tap_to_challenge">Tap an opponent to challenge:</string>
+    <string name="connecting">Connecting…</string>
+
+    <!-- Challenge -->
+    <string name="waiting_accept">Waiting for opponent to accept…</string>
+    <string name="incoming_challenge">Incoming challenge…</string>
+    <string name="challenge_title">Challenge!</string>
+    <string name="challenge_body">%1$s wants to duel you.</string>
+    <string name="accept">Accept</string>
+    <string name="decline">Decline</string>
+
+    <!-- Duel -->
+    <string name="you_are_host">You are the host</string>
+    <string name="connected_to">Connected to %1$s</string>
+    <string name="start_duel">Start duel</string>
+    <string name="waiting_host">Waiting for the host to start…</string>
+    <string name="hold_still">Hold still…</string>
+    <string name="draw_only_signal">Draw ONLY on the signal!</string>
+    <string name="draw">DRAW!</string>
+    <string name="waiting_opponent">Waiting for %1$s…</string>
+    <string name="false_start">False start!</string>
+    <string name="your_time">Your time: %1$d ms</string>
+
+    <!-- Result -->
+    <string name="you_win">YOU WIN</string>
+    <string name="you_lose">YOU LOSE</string>
+    <string name="result_draw">DRAW</string>
+    <string name="play_again">Play again</string>
+    <string name="waiting_photos">Waiting for photos…</string>
+    <string name="waiting_next_round">Waiting for the next round…</string>
+    <string name="leave">Leave</string>
+
+    <!-- Winner photos -->
+    <string name="grab_victory">Grab your victory shots!</string>
+    <string name="enable_camera">Enable camera</string>
+    <string name="skip">Skip</string>
+    <string name="victory_selfie">1/2 — Victory selfie</string>
+    <string name="capture_selfie">Capture selfie</string>
+    <string name="photo_for_loser">2/2 — A photo for the loser</string>
+    <string name="capture_photo">Capture photo</string>
+    <string name="photos_sent">Photos sent to your opponent!</string>
+
+    <!-- Loser photos -->
+    <string name="waiting_winner_photos">Waiting for the winner\'s photos…</string>
 </resources>

@@ -24,6 +24,7 @@ import it.diunipi.sam.highnoon.audio.SoundEffects
 import it.diunipi.sam.highnoon.network.SocketConnection
 import it.diunipi.sam.highnoon.network.WifiDirectConnection
 import it.diunipi.sam.highnoon.notification.fireSignal
+import it.diunipi.sam.highnoon.Config
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -33,9 +34,6 @@ import java.io.File
 import kotlin.math.abs
 import kotlin.random.Random
 
-private const val DRAW_THRESHOLD = 12f
-private const val SELFIE_FILE = "winner_selfie.jpg"
-private const val PHOTO_FILE = "winner_photo.jpg"
 
 class DuelViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -156,7 +154,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         // relaunch ONLY if we're genuinely still just searching (not connecting/connected),
         // so we don't fight an in-progress group negotiation on the receiving phone (Lez. 21).
         viewModelScope.launch {
-            delay(3000)
+            delay(Config.Duel.DISCOVERY_RESTART_DELAY_MS)
             if (searching && !connecting && !socketConnected) wifi.startDiscovery()
         }
     }
@@ -164,7 +162,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     private fun startConnectTimeout() {
         connectTimeoutJob?.cancel()
         connectTimeoutJob = viewModelScope.launch {
-            delay(25_000)
+            delay(Config.Duel.CONNECTION_TIMEOUT_MS)
             if (connecting && !socketConnected) {
                 onConnectFailed("Couldn't connect — was the invitation accepted on the other phone?")
             }
@@ -206,7 +204,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         pendingLobbyMessage = null
         pendingResumeSearch = true                  // back to searching, as requested
         viewModelScope.launch {
-            delay(250)                              // let DECLINE flush before closing the socket
+            delay(Config.Duel.DECLINE_FLUSH_MS)                              // let DECLINE flush before closing the socket
             startTeardown()
         }
     }
@@ -305,7 +303,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         if (pendingResumeSearch) {
             pendingResumeSearch = false
             searching = true
-            viewModelScope.launch { delay(1200); wifi.startDiscovery() }  // after removeGroup settles
+            viewModelScope.launch { delay(Config.Duel.RESUME_SEARCH_DELAY_MS); wifi.startDiscovery() }  // after removeGroup settles
         }
     }
 
@@ -313,7 +311,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
 
     private val sensorListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
-            if (abs(event.values[1]) <= DRAW_THRESHOLD) return
+            if (abs(event.values[1]) <= Config.Duel.DRAW_THRESHOLD) return
             when (phase) {
                 DuelPhase.WAITING -> onEarlyMovement()
                 DuelPhase.DRAW -> onValidDraw()
@@ -350,9 +348,9 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     private fun startCountdown() {
         countdownJob?.cancel()
         countdownJob = viewModelScope.launch {
-            while (!musicFinished && phase == DuelPhase.WAITING) delay(50)
+            while (!musicFinished && phase == DuelPhase.WAITING) delay(Config.Duel.COUNTDOWN_POLL_MS)
             if (phase != DuelPhase.WAITING) return@launch
-            delay(Random.nextLong(1000, 4000))
+            delay(Random.nextLong(Config.Duel.COUNTDOWN_MIN_MS, Config.Duel.COUNTDOWN_MAX_MS))
             if (phase == DuelPhase.WAITING && !resolved) {
                 signalTime = SystemClock.elapsedRealtime()
                 fireSignal(appContext)
@@ -494,8 +492,8 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     fun sendVictoryPhotos() {
         viewModelScope.launch {
             val dir = appContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-            val selfiePath = File(dir, SELFIE_FILE).absolutePath
-            val photoPath = File(dir, PHOTO_FILE).absolutePath
+            val selfiePath = File(dir, Config.Photo.SELFIE_FILE).absolutePath
+            val photoPath = File(dir, Config.Photo.PHOTO_FILE).absolutePath
 
             val selfieB64 = withContext(Dispatchers.Default) { PhotoCodec.encodeFileToBase64(selfiePath) }
             val photoB64 = withContext(Dispatchers.Default) { PhotoCodec.encodeFileToBase64(photoPath) }
@@ -514,6 +512,6 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         iAmReady = true
     }
 
-    fun selfieFileName() = SELFIE_FILE
-    fun photoFileName() = PHOTO_FILE
+    fun selfieFileName() = Config.Photo.SELFIE_FILE
+    fun photoFileName() = Config.Photo.PHOTO_FILE
 }

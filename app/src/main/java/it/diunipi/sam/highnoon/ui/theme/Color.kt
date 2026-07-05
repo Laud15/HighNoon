@@ -2,10 +2,11 @@ package it.diunipi.sam.highnoon.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val sand = Color(0xFFE7E1AB)
+val green = Color(0xFF547D48)
+val brown = Color(0xFF523D42)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val sky = Color(0xFFA7E2DD)
+val blue = Color(0xFF3987AC)
+val bone = Color(0xFFAFA897)
+

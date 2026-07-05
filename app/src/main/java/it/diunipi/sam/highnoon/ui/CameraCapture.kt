@@ -10,6 +10,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
@@ -32,7 +33,7 @@ import kotlin.coroutines.resume
 private const val TAG = "CameraX"
 
 // Get the CameraX provider as a suspend call (wraps its ListenableFuture), so we acquire it
-// inside a Compose effect without blocking the main thread (criterio prof n.1).
+// inside a Compose effect without blocking the main thread
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     suspendCancellableCoroutine { cont ->
         val future = ProcessCameraProvider.getInstance(this)
@@ -41,7 +42,7 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
 
 // Reusable in-app camera: live preview + capture button. Because the camera lives INSIDE our
 // screen (CameraX), the app never goes to the background, so an open Wi-Fi Direct socket stays
-// alive — that's what the Intent approach could not guarantee (Lez. 20: Preview + ImageCapture).
+// alive — that's what the Intent approach could not guarantee
 @Composable
 fun CameraCapture(
     lensFacing: Int,              // CameraSelector.LENS_FACING_FRONT or LENS_FACING_BACK
@@ -86,9 +87,17 @@ fun CameraCapture(
         )
     }
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
-        AndroidView(factory = { previewView }, modifier = Modifier.fillMaxWidth().height(360.dp))
-        Spacer(modifier = Modifier.height(12.dp))
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        AndroidView(
+            factory = { previewView },
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(3f / 4f)     // portrait 4:3 camera: fills the width, height follows the ratio
+        )
+        Spacer(modifier = Modifier.height(24.dp))
         Button(onClick = { takePhoto() }) { Text(text = captureLabel) }
     }
 }

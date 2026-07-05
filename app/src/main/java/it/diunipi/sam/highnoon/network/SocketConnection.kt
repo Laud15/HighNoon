@@ -16,9 +16,10 @@ import java.io.OutputStreamWriter
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import it.diunipi.sam.highnoon.Config
 
 private const val TAG = "DuelSocket"
-private const val PORT = 8988
+//private const val PORT = 8988
 
 // Owns the TCP socket over the Wi-Fi Direct group and runs ALL its blocking I/O on
 // Dispatchers.IO, never on the UI thread (criterio prof n.1; Lez. 16 + 21).
@@ -43,9 +44,9 @@ class SocketConnection {
             try {
                 val server = ServerSocket()
                 server.reuseAddress = true               // covers the TIME_WAIT case
-                server.bind(InetSocketAddress(PORT))
+                server.bind(InetSocketAddress(Config.Network.PORT))
                 serverSocket = server
-                Log.d(TAG, "server: waiting for client on port $PORT")
+                Log.d(TAG, "server: waiting for client on port ${Config.Network.PORT}")
                 val client = server.accept()             // blocks until the client connects
                 // A duel needs exactly ONE opponent: stop listening and free the port NOW,
                 // so the listening socket can never be left bound across the session.
@@ -68,15 +69,15 @@ class SocketConnection {
             while (scope.isActive) {
                 try {
                     val s = Socket()
-                    s.connect(InetSocketAddress(host, PORT), 5000)
+                    s.connect(InetSocketAddress(host, Config.Network.PORT), Config.Network.SOCKET_CONNECT_TIMEOUT_MS)
                     Log.d(TAG, "client: connected to $host")
                     handleSocket(s)
                     return@launch
                 } catch (e: Exception) {
                     attempts++
                     Log.d(TAG, "client: attempt $attempts failed (${e.message})")
-                    if (attempts >= 5) { notifyError("client: could not reach $host"); return@launch }
-                    delay(1000)
+                    if (attempts >= Config.Network.CONNECT_RETRIES) { notifyError("client: could not reach $host"); return@launch }
+                    delay(Config.Network.RETRY_DELAY_MS)
                 }
             }
         }

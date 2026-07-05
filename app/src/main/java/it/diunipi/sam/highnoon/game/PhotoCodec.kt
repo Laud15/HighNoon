@@ -3,6 +3,7 @@ package it.diunipi.sam.highnoon.game
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
+import it.diunipi.sam.highnoon.Config
 import java.io.ByteArrayOutputStream
 import kotlin.math.max
 
@@ -11,8 +12,6 @@ import kotlin.math.max
 // message (no binary framing needed). We downscale + compress first so the string stays small.
 object PhotoCodec {
 
-    private const val MAX_SIDE = 1080
-    private const val QUALITY = 70
 
     // Decode a saved photo file, downscale it, compress to JPEG, return base64 text.
     fun encodeFileToBase64(path: String): String? {
@@ -22,13 +21,13 @@ object PhotoCodec {
 
         val longest = max(bounds.outWidth, bounds.outHeight)
         var sample = 1
-        while (longest / sample > MAX_SIDE) sample *= 2
+        while (longest / sample > Config.Photo.MAX_SIDE) sample *= 2
 
         val opts = BitmapFactory.Options().apply { inSampleSize = sample }
         val bitmap = BitmapFactory.decodeFile(path, opts) ?: return null
 
         val jpegBytes = ByteArrayOutputStream().use { stream ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, QUALITY, stream)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, Config.Photo.JPEG_QUALITY, stream)
             bitmap.recycle()
             stream.toByteArray()
         }
