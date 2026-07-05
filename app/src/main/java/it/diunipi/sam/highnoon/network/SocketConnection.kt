@@ -22,7 +22,7 @@ private const val TAG = "DuelSocket"
 //private const val PORT = 8988
 
 // Owns the TCP socket over the Wi-Fi Direct group and runs ALL its blocking I/O on
-// Dispatchers.IO, never on the UI thread (criterio prof n.1; Lez. 16 + 21).
+// Dispatchers.IO, never on the UI thread .
 // Callbacks are marshalled to the MAIN thread, so the UI can use them directly.
 // One owner of the resource -> it also closes everything (like WesternMusic).
 class SocketConnection {

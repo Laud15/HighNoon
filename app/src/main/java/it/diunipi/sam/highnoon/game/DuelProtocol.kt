@@ -1,7 +1,7 @@
 package it.diunipi.sam.highnoon.game
 
 // Shared "language" the two phones speak over the socket. The transport (SocketConnection)
-// is a dumb pipe; it knows nothing of these messages (separation of concerns, Lez. 11).
+// is a dumb pipe; it knows nothing of these messages
 object DuelProtocol {
     // Control, host -> client
     const val WAIT = "WAIT"

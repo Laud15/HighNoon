@@ -11,7 +11,7 @@ import java.io.File
 
 // Saves a photo into the shared gallery via MediaStore. On Android 10+ (we're minSdk 33)
 // this needs NO storage permission: the system indexes the image so the gallery shows it
-// (Lez. 20: MediaStore is the system's media index). Blocking I/O -> off the UI thread.
+
 object GallerySaver {
 
     // Returns true on success. Copies the app-private file into Pictures/HighNoon.

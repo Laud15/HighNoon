@@ -152,7 +152,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         if (active) return
         // Discovery also stops when a connection starts forming. Wait a moment and re-check:
         // relaunch ONLY if we're genuinely still just searching (not connecting/connected),
-        // so we don't fight an in-progress group negotiation on the receiving phone (Lez. 21).
+        // so we don't fight an in-progress group negotiation on the receiving phone
         viewModelScope.launch {
             delay(Config.Duel.DISCOVERY_RESTART_DELAY_MS)
             if (searching && !connecting && !socketConnected) wifi.startDiscovery()

@@ -21,7 +21,7 @@ private const val TAG = "WifiDirect"
 // bridge), like WesternMusic.onFinished.
 class WifiDirectConnection(private val context: Context) {
 
-    // System service: the entry point for every Wi-Fi Direct operation (Lez. 21).
+    // System service: the entry point for every Wi-Fi Direct operation .
     private val manager = context.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
 
     // The channel: our handle to talk to the framework, bound to the main Looper.
@@ -38,7 +38,7 @@ class WifiDirectConnection(private val context: Context) {
     var onConnectRequestFailed: (() -> Unit)? = null   // the framework rejected the connect() request
 
     // These two listeners fire REPEATEDLY (on every peer/connection change), so we
-    // create them ONCE as fields and reuse them (criterio prof n.3, fewer objects).
+    // create them ONCE as fields and reuse them
     private val peerListListener = WifiP2pManager.PeerListListener { peers ->
         onPeersAvailable?.invoke(peers.deviceList.toList())
     }
@@ -46,7 +46,7 @@ class WifiDirectConnection(private val context: Context) {
         onConnectionInfo?.invoke(info)
     }
 
-    // The framework "calls us back" here on P2P events (Lez. 17). Keep onReceive light.
+    // The framework "calls us back" here on P2P events. Keep onReceive light.
     private val receiver = object : BroadcastReceiver() {
         @SuppressLint("MissingPermission")
         override fun onReceive(ctx: Context, intent: Intent) {
@@ -66,7 +66,7 @@ class WifiDirectConnection(private val context: Context) {
                 }
                 WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {
                     // getParcelableExtra(name) is deprecated since API 33: branch by
-                    // version like the rest of the app (Lez. 01: fragmentation).
+                    // version like the rest of the app.
                     // minSdk 33: the Class<T> overload is always available (no deprecated fallback).
                     val me = intent.getParcelableExtra(
                         WifiP2pManager.EXTRA_WIFI_P2P_DEVICE, WifiP2pDevice::class.java

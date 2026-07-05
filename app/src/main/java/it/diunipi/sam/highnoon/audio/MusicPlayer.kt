@@ -6,7 +6,7 @@ import android.media.MediaPlayer
 // Owns ONE MediaPlayer for a GIVEN raw track and controls its whole life cycle
 // (create, release, avoid double players). Generalized from the old WesternMusic so the
 // same clean "one owner" logic serves the western intro AND the victory/defeat tracks
-// (no duplication / separation of concerns, Lez. 11 + 20).
+
 class MusicPlayer(private val context: Context, private val resId: Int) {
     private var player: MediaPlayer? = null
 
