@@ -3,10 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Wi-Fi Direct: read Wi-Fi state and start/manage P2P connections. Normal permissions. -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />

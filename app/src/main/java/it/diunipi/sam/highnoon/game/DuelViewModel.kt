@@ -353,9 +353,9 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
             delay(Random.nextLong(Config.Duel.COUNTDOWN_MIN_MS, Config.Duel.COUNTDOWN_MAX_MS))
             if (phase == DuelPhase.WAITING && !resolved) {
                 signalTime = SystemClock.elapsedRealtime()
-                fireSignal(appContext)
+                socket.send(DuelProtocol.GO)  // send FIRST so the client starts as early as possible
+                fireSignal(appContext)   // then buzz locally
                 phase = DuelPhase.DRAW
-                socket.send(DuelProtocol.GO)
             }
         }
     }

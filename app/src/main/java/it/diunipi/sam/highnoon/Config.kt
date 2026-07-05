@@ -12,7 +12,7 @@ object Config {
     }
 
     object Duel {
-        const val DRAW_THRESHOLD = 12f               // linear-accel magnitude for a "draw"
+        const val DRAW_THRESHOLD = 14f               // linear-accel magnitude for a "draw"
         const val COUNTDOWN_MIN_MS = 1000L           // random wait before the signal: lower bound
         const val COUNTDOWN_MAX_MS = 4000L           // ... upper bound
         const val CONNECTION_TIMEOUT_MS = 25_000L    // give up "Connecting…" after this

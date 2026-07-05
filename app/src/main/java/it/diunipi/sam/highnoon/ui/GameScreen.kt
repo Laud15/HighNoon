@@ -44,13 +44,18 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import android.graphics.Bitmap
+import androidx.compose.runtime.produceState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
+
 import it.diunipi.sam.highnoon.R
 import it.diunipi.sam.highnoon.game.ChallengeState
 import it.diunipi.sam.highnoon.game.DuelPhase
 import it.diunipi.sam.highnoon.game.DuelViewModel
 import it.diunipi.sam.highnoon.game.GallerySaver
 import it.diunipi.sam.highnoon.game.Outcome
-import kotlinx.coroutines.launch
 import java.io.File
 
 private fun requiredRuntimePermissions() = arrayOf(Manifest.permission.NEARBY_WIFI_DEVICES) // minSdk 33
@@ -383,6 +388,7 @@ private fun WinnerPhotoSection(viewModel: DuelViewModel) {
     ) { granted -> camGranted = granted }
 
     var step by remember { mutableStateOf(0) }   // 0 selfie, 1 photo, 2 sent
+    var didSkip by remember { mutableStateOf(false) }
 
     fun fileIn(name: String) =
         File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), name)
@@ -394,7 +400,11 @@ private fun WinnerPhotoSection(viewModel: DuelViewModel) {
             Text(text = stringResource(R.string.enable_camera))
         }
         Spacer(modifier = Modifier.height(8.dp))
-        TextButton(onClick = { viewModel.skipVictoryPhotos() }) {
+        TextButton(onClick = {
+            viewModel.skipVictoryPhotos()
+            didSkip = true
+            step = 2
+        }) {
             Text(text = stringResource(R.string.skip))
         }
         return
@@ -411,7 +421,11 @@ private fun WinnerPhotoSection(viewModel: DuelViewModel) {
                 onCaptured = { step = 1 }
             )
             Spacer(modifier = Modifier.height(16.dp))
-            TextButton(onClick = { viewModel.skipVictoryPhotos() }) {
+            TextButton(onClick = {
+                viewModel.skipVictoryPhotos()
+                didSkip = true
+                step = 2                      // leave the camera composable NOW -> unbindAll() happens here,
+            }) {                             // not later during "Play again" (that was the lag)
                 Text(text = stringResource(R.string.skip))
             }
         }
@@ -429,38 +443,49 @@ private fun WinnerPhotoSection(viewModel: DuelViewModel) {
             )
         }
         2 -> {
-            DuelText(text = stringResource(R.string.photos_sent), fontSize = 14.sp)
-            Spacer(modifier = Modifier.height(12.dp))
-            // The winner already has the files on disk — just load and show them.
-            loadLocalBitmap(fileIn(viewModel.selfieFileName()))?.let {
-                Image(
-                    bitmap = it.asImageBitmap(),
-                    contentDescription = "my selfie",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxWidth().height(260.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            loadLocalBitmap(fileIn(viewModel.photoFileName()))?.let {
-                Image(
-                    bitmap = it.asImageBitmap(),
-                    contentDescription = "my photo",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxWidth().height(260.dp)
-                )
-            }
-            val scope = rememberCoroutineScope()
-            val ctx = LocalContext.current
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = {
-                scope.launch {
-                    val a = GallerySaver.saveToGallery(ctx, fileIn(viewModel.selfieFileName()), "highnoon_selfie_${System.currentTimeMillis()}.jpg")
-                    val b = GallerySaver.saveToGallery(ctx, fileIn(viewModel.photoFileName()), "highnoon_photo_${System.currentTimeMillis()}.jpg")
-                    Toast.makeText(ctx, if (a && b) "Saved to gallery" else "Save failed", Toast.LENGTH_SHORT).show()
+            if (!didSkip) {
+                DuelText(text = stringResource(R.string.photos_sent), fontSize = 14.sp)
+                Spacer(modifier = Modifier.height(12.dp))
+
+                val selfieBmp by produceState<Bitmap?>(initialValue = null, viewModel.selfieFileName()) {
+                    value = withContext(Dispatchers.IO) { loadLocalBitmap(fileIn(viewModel.selfieFileName())) }
                 }
-            }) {
-                Text(text = "Save to gallery")
+                val photoBmp by produceState<Bitmap?>(initialValue = null, viewModel.photoFileName()) {
+                    value = withContext(Dispatchers.IO) { loadLocalBitmap(fileIn(viewModel.photoFileName())) }
+                }
+
+                selfieBmp?.let {
+                    Image(
+                        bitmap = it.asImageBitmap(),
+                        contentDescription = "my selfie",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.fillMaxWidth().height(260.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                photoBmp?.let {
+                    Image(
+                        bitmap = it.asImageBitmap(),
+                        contentDescription = "my photo",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.fillMaxWidth().height(260.dp)
+                    )
+                }
+
+                val scope = rememberCoroutineScope()
+                val ctx = LocalContext.current
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = {
+                    scope.launch {
+                        val a = GallerySaver.saveToGallery(ctx, fileIn(viewModel.selfieFileName()), "highnoon_selfie_${System.currentTimeMillis()}.jpg")
+                        val b = GallerySaver.saveToGallery(ctx, fileIn(viewModel.photoFileName()), "highnoon_photo_${System.currentTimeMillis()}.jpg")
+                        Toast.makeText(ctx, if (a && b) "Saved to gallery" else "Save failed", Toast.LENGTH_SHORT).show()
+                    }
+                }) {
+                    Text(text = "Save to gallery")
+                }
             }
+            // se didSkip == true: non mostra nulla, restano solo i bottoni Play again / Leave sotto
         }
     }
 }

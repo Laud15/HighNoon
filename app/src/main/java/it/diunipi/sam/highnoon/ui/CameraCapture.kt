@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,9 +58,14 @@ fun CameraCapture(
     val previewView = remember { PreviewView(context) }
     val imageCapture = remember { ImageCapture.Builder().build() }
 
+    // Hold the provider we obtain in the effect, so onDispose can reuse it instead of
+    // requesting (and blocking on) a fresh one
+    val cameraProviderRef = remember { mutableStateOf<ProcessCameraProvider?>(null) }
+
     // Bind Preview + ImageCapture to this lens; re-runs if the lens changes (front <-> back).
     LaunchedEffect(lensFacing) {
         val cameraProvider = context.getCameraProvider()
+        cameraProviderRef.value = cameraProvider
         cameraProvider.unbindAll()
         val preview = Preview.Builder().build().also { it.setSurfaceProvider(previewView.surfaceProvider) }
         val selector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
@@ -72,7 +78,9 @@ fun CameraCapture(
 
     // Release the camera when this composable leaves (e.g. the RESULT screen is dismissed).
     DisposableEffect(Unit) {
-        onDispose { runCatching { ProcessCameraProvider.getInstance(context).get().unbindAll() } }
+        onDispose {
+            runCatching { cameraProviderRef.value?.unbindAll() }
+        }
     }
 
     fun takePhoto() {
