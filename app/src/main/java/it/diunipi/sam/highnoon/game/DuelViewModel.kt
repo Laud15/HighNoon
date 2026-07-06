@@ -72,6 +72,9 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     var receivedSelfie by mutableStateOf<Bitmap?>(null); private set
     var receivedPhoto by mutableStateOf<Bitmap?>(null); private set
 
+    var iAmReady by mutableStateOf(true); private set
+    var opponentReady by mutableStateOf(true); private set
+
     // --- internals ---
     private var signalTime = 0L
     private var musicFinished = false
@@ -91,8 +94,6 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     private var clientDrewMs: Long? = null
     private var clientFalse = false
 
-    var iAmReady by mutableStateOf(true); private set
-    var opponentReady by mutableStateOf(true); private set
 
 
     init {
