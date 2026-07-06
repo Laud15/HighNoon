@@ -157,4 +157,4 @@ If you clone the project, make sure the following are present:
 
 ## Notes
 
-Developed for educational purposes. Add any license and credits here.
+Developed for educational purposes. 
