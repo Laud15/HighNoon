@@ -52,4 +52,11 @@
 
     <!-- Loser photos -->
     <string name="waiting_winner_photos">Waiting for the winner\'s photos…</string>
+
+    <!-- Photo saving -->
+    <string name="save_to_gallery">Save to gallery</string>
+    <string name="saved_to_gallery">Saved to gallery</string>
+    <string name="save_failed">Save failed</string>
+    <string name="default_opponent">opponent</string>
+    <string name="someone">Someone</string>
 </resources>

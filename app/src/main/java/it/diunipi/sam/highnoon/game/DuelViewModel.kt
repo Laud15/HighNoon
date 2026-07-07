@@ -94,8 +94,6 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     private var clientDrewMs: Long? = null
     private var clientFalse = false
 
-
-
     init {
         westernMusic.onFinished = { musicFinished = true }
 
@@ -109,7 +107,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
             socketConnected = true
             connecting = false
             connectionError = null
-            if (iInitiated) {                       // challenger opens the app-level handshake
+            if (iInitiated) {  // challenger opens the app-level handshake
                 socket.send(DuelProtocol.challenge(nickname.ifBlank { "Player" }))
                 challengeState = ChallengeState.OUTGOING
             }

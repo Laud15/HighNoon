@@ -169,7 +169,7 @@ fun GameScreen(
                                 Text(
                                     text = stringResource(
                                         R.string.challenge_body,
-                                        viewModel.opponentName.ifBlank { "Someone" }
+                                        viewModel.opponentName.ifBlank { stringResource(R.string.someone) }
                                     )
                                 )
                             },
@@ -203,7 +203,7 @@ fun GameScreen(
 
 @Composable
 private fun DuelContent(viewModel: DuelViewModel) {
-    val opponent = viewModel.opponentName.ifBlank { "opponent" }
+    val opponent = viewModel.opponentName.ifBlank { stringResource(R.string.default_opponent) }
 
     // While the winner's live camera is on screen, DON'T scroll: a live PreviewView and
     // verticalScroll don't coexist (the preview needs a bounded, non-scrolling slot).
@@ -328,6 +328,9 @@ private fun DuelContent(viewModel: DuelViewModel) {
                     if (viewModel.receivedSelfie != null || viewModel.receivedPhoto != null) {
                         val scope = rememberCoroutineScope()
                         val ctx = LocalContext.current
+
+                        val savedMsg = stringResource(R.string.saved_to_gallery)
+                        val failedMsg = stringResource(R.string.save_failed)
                         Button(onClick = {
                             scope.launch {
                                 var ok = true
@@ -337,10 +340,10 @@ private fun DuelContent(viewModel: DuelViewModel) {
                                 viewModel.receivedPhoto?.let {
                                     ok = GallerySaver.saveBitmapToGallery(ctx, it, "highnoon_photo_${System.currentTimeMillis()}.jpg") && ok
                                 }
-                                Toast.makeText(ctx, if (ok) "Saved to gallery" else "Save failed", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(ctx, if (ok) savedMsg else failedMsg, Toast.LENGTH_SHORT).show()
                             }
                         }) {
-                            Text(text = "Save to gallery")
+                            Text(text = stringResource(R.string.save_to_gallery))
                         }
                     }
                 }
@@ -474,15 +477,19 @@ private fun WinnerPhotoSection(viewModel: DuelViewModel) {
 
                 val scope = rememberCoroutineScope()
                 val ctx = LocalContext.current
+
                 Spacer(modifier = Modifier.height(8.dp))
+
+                val savedMsg = stringResource(R.string.saved_to_gallery)
+                val failedMsg = stringResource(R.string.save_failed)
                 Button(onClick = {
                     scope.launch {
                         val a = GallerySaver.saveToGallery(ctx, fileIn(viewModel.selfieFileName()), "highnoon_selfie_${System.currentTimeMillis()}.jpg")
                         val b = GallerySaver.saveToGallery(ctx, fileIn(viewModel.photoFileName()), "highnoon_photo_${System.currentTimeMillis()}.jpg")
-                        Toast.makeText(ctx, if (a && b) "Saved to gallery" else "Save failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(ctx, if (a && b) savedMsg else failedMsg, Toast.LENGTH_SHORT).show()
                     }
                 }) {
-                    Text(text = "Save to gallery")
+                    Text(text = stringResource(R.string.save_to_gallery))
                 }
             }
             // se didSkip == true: non mostra nulla, restano solo i bottoni Play again / Leave sotto
