@@ -83,7 +83,7 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     private var socketStarted = false
     private var connectTimeoutJob: Job? = null
 
-    private var iInitiated = false                  // I tapped -> I'm the challenger
+    private var iInitiated = false  // I tapped -> I'm the challenger
     private var pendingLobbyMessage: String? = null
     private var pendingResumeSearch = false
 
@@ -181,8 +181,8 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         if (info.groupFormed && !socketStarted) {
             socketStarted = true
             searching = false
-            wifi.stopDiscovery()              //  group formed, stop scanning cleanly
-            connecting = true                 // the OTHER side may have initiated
+            wifi.stopDiscovery()   //  group formed, stop scanning cleanly
+            connecting = true       // the OTHER side may have initiated
             connectionError = null
             isGroupOwner = info.isGroupOwner
             if (info.isGroupOwner) socket.startServer()
@@ -201,9 +201,9 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         socket.send(DuelProtocol.DECLINE)
         challengeState = ChallengeState.NONE
         pendingLobbyMessage = null
-        pendingResumeSearch = true                  // back to searching, as requested
+        pendingResumeSearch = true   // back to searching, as requested
         viewModelScope.launch {
-            delay(Config.Duel.DECLINE_FLUSH_MS)                              // let DECLINE flush before closing the socket
+            delay(Config.Duel.DECLINE_FLUSH_MS) // let DECLINE flush before closing the socket
             startTeardown()
         }
     }
@@ -335,9 +335,9 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
     // --- Round lifecycle -----------------------------------------------------
 
     fun startDuel() {
-        if (!isGroupOwner) return          // only the host (Group Owner) runs the round
+        if (!isGroupOwner) return // only the host (Group Owner) runs the round
         resetRoundState()
-        stopResultMusic()            // NEW: silence any victory/defeat before a new round
+        stopResultMusic() // silence any victory/defeat before a new round
         phase = DuelPhase.WAITING
         socket.send(DuelProtocol.WAIT)
         westernMusic.play()
@@ -361,12 +361,12 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun beginWaiting() {   // client side, on WAIT
         resetRoundState()
-        stopResultMusic()            // NEW: silence any victory/defeat before a new round
+        stopResultMusic() //  silence any victory/defeat before a new round
         phase = DuelPhase.WAITING
         westernMusic.play()
     }
 
-    private fun beginDraw() {      // client side, on GO
+    private fun beginDraw() {   // client side, on GO
         // Fire FIRST — buzz + timestamp are time-critical. westernMusic.stop() can block the
         // main thread a few ms (MediaPlayer.release), so do it AFTER the buzz, or the client's
         // vibration lags by a variable amount (the desync you saw).
@@ -441,11 +441,11 @@ class DuelViewModel(application: Application) : AndroidViewModel(application) {
         when (o) {
             Outcome.WIN -> {
                 victoryMusic.play()
-                iAmReady = false          // winner becomes ready only AFTER sending the photos
+                iAmReady = false   // winner becomes ready only AFTER sending the photos
             }
             Outcome.LOSE -> {
                 defeatMusic.play()
-                iAmReady = true           // loser doesn't gate the next round
+                iAmReady = true  // loser doesn't gate the next round
                 socket.send(DuelProtocol.READY)
             }
             Outcome.DRAW -> {

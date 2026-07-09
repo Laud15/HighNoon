@@ -49,7 +49,6 @@ import androidx.compose.runtime.produceState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
-
 import it.diunipi.sam.highnoon.R
 import it.diunipi.sam.highnoon.game.ChallengeState
 import it.diunipi.sam.highnoon.game.DuelPhase

@@ -43,11 +43,11 @@ class SocketConnection {
         scope.launch {
             try {
                 val server = ServerSocket()
-                server.reuseAddress = true               // covers the TIME_WAIT case
+                server.reuseAddress = true  // covers the TIME_WAIT case
                 server.bind(InetSocketAddress(Config.Network.PORT))
                 serverSocket = server
                 Log.d(TAG, "server: waiting for client on port ${Config.Network.PORT}")
-                val client = server.accept()             // blocks until the client connects
+                val client = server.accept()  // blocks until the client connects
                 // A duel needs exactly ONE opponent: stop listening and free the port NOW,
                 // so the listening socket can never be left bound across the session.
                 server.close()
@@ -126,7 +126,7 @@ class SocketConnection {
         withContext(Dispatchers.Main) { onError?.invoke(msg) }
     }
 
-    // Close whatever is open; safe to call multiple times. Also the way to UNBLOCK a
+    // Close whatever is open; safe to call multiple times. Also, the way to UNBLOCK a
     // thread stuck in accept()/readLine(): closing the socket makes it throw.
     private fun closeSockets() {
         try { socket?.close() } catch (_: Exception) {}

@@ -46,7 +46,7 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
 // alive — that's what the Intent approach could not guarantee
 @Composable
 fun CameraCapture(
-    lensFacing: Int,              // CameraSelector.LENS_FACING_FRONT or LENS_FACING_BACK
+    lensFacing: Int,  // CameraSelector.LENS_FACING_FRONT or LENS_FACING_BACK
     outputFile: File,
     captureLabel: String,
     modifier: Modifier = Modifier,
